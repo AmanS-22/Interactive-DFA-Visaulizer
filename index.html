@@ -1,64 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Simple DFA Tool</title>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DFA Visualizer</title>
     <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="container">
-      <header class="header">
-        <h1>Simple DFA Transition Tool</h1>
-      </header>
+</head>
+<body>
 
-      <section class="panel inputs">
-        <div class="row">
-          <label>States (comma separated):
-            <input id="states-input" placeholder="q0,q1,q2" />
-          </label>
-          <label>Alphabet (comma separated):
-            <input id="alpha-input" placeholder="a,b" />
-          </label>
-        </div>
+<div class="container">
+    <h1>DFA Visualizer</h1>
+
+    <!-- INPUT PANEL -->
+    <section class="panel">
+        <h2 class="section-title">DFA Specification</h2>
 
         <div class="row">
-          <label class="full">Transitions (one per line: from,symbol,to)
-            <textarea id="trans-input" placeholder="q0,a,q1\nq1,b,q1"></textarea>
-          </label>
+            <label>States
+                <input id="states-input" placeholder="q0,q1,q2" />
+            </label>
+            <label>Alphabet
+                <input id="alpha-input" placeholder="0,1" />
+            </label>
         </div>
+
+        <label>Transitions (from,symbol,to)
+            <textarea id="trans-input" placeholder="q0,0,q1"></textarea>
+        </label>
 
         <div class="row">
-          <label>Start state:
-            <input id="start-input" placeholder="q0" />
-          </label>
-          <label>Final states (comma separated):
-            <input id="final-input" placeholder="q1" />
-          </label>
+            <label>Start State
+                <input id="start-input" placeholder="q0" />
+            </label>
+            <label>Final States
+                <input id="final-input" placeholder="q2" />
+            </label>
         </div>
 
-        <div class="row actions">
-          <button id="btn-generate">Generate</button>
-          <button id="btn-arrange">Arrange</button>
-          <button id="btn-clear">Clear</button>
-          <div id="error" role="alert" aria-live="polite" class="error hidden"></div>
+        <div class="actions">
+            <button id="btn-generate" class="btn primary">Generate</button>
+            <button id="btn-arrange" class="btn">Arrange</button>
+            <button id="btn-clear" class="btn danger">Clear</button>
         </div>
-      </section>
 
-      <section class="panel diagram-panel">
-        <div id="diagram" class="diagram" aria-label="DFA diagram" tabindex="0"></div>
-        <!-- SVG overlay inserted by script -->
-      </section>
+        <div id="error" class="error hidden"></div>
+    </section>
 
-      <section class="panel table-panel">
-        <h3>Transitions</h3>
-        <table id="trans-table">
-          <thead><tr><th>From</th><th>Symbol</th><th>To</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </section>
-    </div>
+    <!-- DIAGRAM -->
+    <section class="panel">
+        <h2 class="section-title">Diagram</h2>
+        <div id="diagram">
+            <div id="diagram-content"></div>
+        </div>
+    </section>
 
-    <script src="script.js"></script>
-  </body>
+    <!-- TRANSITION TABLE -->
+    <section class="panel">
+        <h2 class="section-title">Transition Table</h2>
+        <div class="table-wrapper">
+            <table id="dfa-table">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script src="script.js"></script>
+</body>
 </html>
