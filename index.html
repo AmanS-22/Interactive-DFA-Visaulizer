@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Simple DFA Tool</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Simple DFA Transition Tool</h1>
+      </header>
+
+      <section class="panel inputs">
+        <div class="row">
+          <label>States (comma separated):
+            <input id="states-input" placeholder="q0,q1,q2" />
+          </label>
+          <label>Alphabet (comma separated):
+            <input id="alpha-input" placeholder="a,b" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="full">Transitions (one per line: from,symbol,to)
+            <textarea id="trans-input" placeholder="q0,a,q1\nq1,b,q1"></textarea>
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Start state:
+            <input id="start-input" placeholder="q0" />
+          </label>
+          <label>Final states (comma separated):
+            <input id="final-input" placeholder="q1" />
+          </label>
+        </div>
+
+        <div class="row actions">
+          <button id="btn-generate">Generate</button>
+          <button id="btn-arrange">Arrange</button>
+          <button id="btn-clear">Clear</button>
+          <div id="error" role="alert" aria-live="polite" class="error hidden"></div>
+        </div>
+      </section>
+
+      <section class="panel diagram-panel">
+        <div id="diagram" class="diagram" aria-label="DFA diagram" tabindex="0"></div>
+        <!-- SVG overlay inserted by script -->
+      </section>
+
+      <section class="panel table-panel">
+        <h3>Transitions</h3>
+        <table id="trans-table">
+          <thead><tr><th>From</th><th>Symbol</th><th>To</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
