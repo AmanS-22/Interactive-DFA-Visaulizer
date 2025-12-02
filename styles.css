@@ -1,169 +1,257 @@
 :root {
-  --bg: #111;
-  --panel: #1b1b1b;
-  --border: #333;
-  --input: #222;
-  --text: #eee;
-  --muted: #999;
-  --primary: #3a8bff;
-  --danger: #e85959;
+    --bg: #121212;
+    --panel: #1E1E1E;
+    --input: #2A2A2A;
+    --text: #EAEAEA;
+    --text-muted: #9E9E9E;
+    --border: #333;
+    --primary: #2F80ED;
+    --danger: #E74C3C;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, Arial, sans-serif;
-  padding: 20px;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, sans-serif;
+    padding: 20px;
 }
 
 .container {
-  max-width: 900px;
-  margin: auto;
+    max-width: 1000px;
+    margin: auto;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 18px;
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 20px;
 }
 
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: var(--text-muted);
 }
 
 .row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 label {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    font-size: 14px;
 }
 
-input, textarea {
-  background: var(--input);
-  border: 1px solid var(--border);
-  padding: 7px;
-  margin-top: 5px;
-  border-radius: 5px;
-  color: var(--text);
+input,
+textarea {
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--input);
+    color: var(--text);
+    resize: none;
 }
 
-textarea { height: 90px; }
+textarea {
+    height: 80px;
+}
 
 .actions {
-  display: flex;
-  gap: 10px;
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .btn {
-  background: #333;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  color: var(--text);
-  cursor: pointer;
+    padding: 8px 14px;
+    border: none;
+    background: #333;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--text);
 }
 
-.btn.primary { background: var(--primary); }
-.btn.danger { background: var(--danger); }
+.btn.primary {
+    background: var(--primary);
+}
+
+.btn.danger {
+    background: var(--danger);
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
 
 .error {
-  margin-top: 8px;
-  padding: 8px;
-  background: #471717;
-  border: 1px solid #703333;
-  color: #ffbcbc;
-  border-radius: 5px;
+    margin-top: 10px;
+    padding: 8px;
+    background: #3a1e1e;
+    border: 1px solid #682727;
+    border-radius: 6px;
+    color: #ff9a9a;
 }
 
-.hidden { display: none; }
+.hidden {
+    display: none;
+}
 
-/* DIAGRAM */
+/* Diagram Area */
+
 #diagram {
-  background: #151515;
-  border: 1px solid var(--border);
-  height: 360px;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
+    height: 420px;
+    border-radius: 10px;
+    background: #181818;
+    border: 1px solid var(--border);
+    overflow: auto;
+    position: relative;
 }
+
+#diagram-content {
+    width: 900px;
+    height: 700px;
+    position: relative;
+}
+
+/* State Nodes */
 
 .state {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #262626;
-  border: 2px solid #555;
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--text);
-  cursor: grab;
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: #2D2D2D;
+    border: 2px solid #555;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    cursor: grab;
 }
 
-.state.final::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 2px solid #999;
-  border-radius: 50%;
+.state:active {
+    cursor: grabbing;
+}
+
+.state.final {
+    box-shadow: 0 0 0 3px var(--text-muted) inset;
 }
 
 .state.start::before {
-  content: "▶";
-  position: absolute;
-  left: -14px;
-  color: var(--primary);
-  font-size: 11px;
+    content: "▶";
+    position: absolute;
+    left: -14px;
+    font-size: 12px;
+    color: var(--primary);
 }
 
-/* SVG */
 .svg-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
 }
 
 .arrow {
-  stroke: #ccc;
-  stroke-width: 2;
-  fill: none;
+    stroke: #888;
+    stroke-width: 2;
+    fill: none;
 }
 
 .label-text {
-  fill: white;
-  stroke: black;
-  stroke-width: 3;
-  paint-order: stroke;
-  font-size: 14px;
+    fill: #fff;
+    font-size: 13px;
+    stroke: #000;
+    stroke-width: 3;
+    paint-order: stroke;
 }
 
-/* TABLE */
+/* Table */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
 #dfa-table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#dfa-table thead {
+    background: #262626;
 }
 
 #dfa-table th,
 #dfa-table td {
-  border-bottom: 1px solid var(--border);
-  padding: 8px;
+    padding: 8px;
+    border-bottom: 1px solid #333;
 }
 
-#dfa-table th:first-child {
-  text-align: left;
+#dfa-table tbody tr:nth-child(odd) {
+    background: #1b1b1b;
 }
 
-#dfa-table td {
+/* ===== Soft Footer Theme ===== */
+/* ===== Soft Footer Theme (with per-icon hover colors) ===== */
+
+.footer-soft {
+  margin-top: 40px;
+  padding: 30px 0 40px;
   text-align: center;
+  color: #dcdcdc;
+  font-size: 15px;
+  opacity: 0.85;
 }
+
+.footer-highlight {
+  color: #f5d27a;
+  font-weight: 600;
+}
+
+.footer-icons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  opacity: 0.8;
+}
+
+.footer-icons a {
+  color: #e5e5e5;
+  font-size: 26px;
+  transition: 0.25s ease;
+}
+
+.footer-icons a:nth-child(1):hover {
+  color: #2f4bec;
+  transform: scale(1.1);
+}
+
+.footer-icons a:nth-child(2):hover {
+  color: #8a51e6;
+  transform: scale(1.1);
+}
+
+.footer-icons a:nth-child(3):hover {
+  color: #e4b32e;
+  transform: scale(1.1);
+}
+
