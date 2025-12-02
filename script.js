@@ -350,17 +350,4 @@ document.querySelectorAll("textarea").forEach(t => {
   grow(); // initial
 });
 
-/* DEFAULT EXAMPLE */
-statesInput.value = "q0,q1,q2";
-alphaInput.value = "0,1";
-transInput.value =
-`q0,0,q1
-q0,1,q0
-q1,0,q1
-q1,1,q2
-q2,0,q1
-q2,1,q0`;
-startInput.value = "q0";
-finalInput.value = "q2";
-
 })();
