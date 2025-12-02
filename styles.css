@@ -59,19 +59,29 @@ label {
     font-size: 14px;
 }
 
-input,
-textarea {
-    margin-top: 6px;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+/* ----- inputs and textarea separated (fix) ----- */
+
+input {
     background: var(--input);
+    border: 1px solid var(--border);
+    padding: 7px;
+    margin-top: 5px;
+    border-radius: 5px;
     color: var(--text);
-    resize: none;
 }
 
+/* auto-expanding textarea like screenshot 2 */
 textarea {
-    height: 80px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    padding: 7px;
+    margin-top: 5px;
+    border-radius: 5px;
+    color: var(--text);
+    resize: none;
+    overflow: hidden;
+    min-height: 120px;
+    height: auto;
 }
 
 .actions {
@@ -209,7 +219,6 @@ textarea {
     background: #1b1b1b;
 }
 
-/* ===== Soft Footer Theme ===== */
 /* ===== Soft Footer Theme (with per-icon hover colors) ===== */
 
 .footer-soft {
@@ -240,6 +249,7 @@ textarea {
   transition: 0.25s ease;
 }
 
+/* LinkedIn / GitHub / Coffee hover colors */
 .footer-icons a:nth-child(1):hover {
   color: #2f4bec;
   transform: scale(1.1);
@@ -254,4 +264,3 @@ textarea {
   color: #e4b32e;
   transform: scale(1.1);
 }
-

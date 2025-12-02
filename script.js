@@ -154,10 +154,6 @@ function renderStates(){
 }
 
 /* ====== TRANSITIONS ====== */
-function circlePoint(cx, cy, r, theta){
-  return { x: cx + Math.cos(theta)*r, y: cy + Math.sin(theta)*r };
-}
-
 function clearPaths(){
   pathElems.forEach(p => p.g.remove());
   pathElems = [];
@@ -218,7 +214,6 @@ function computePath(from, to, parallelIndex, parallelCount){
 function drawTransitions(){
   clearPaths();
 
-  // group for parallel arcs
   const groups = {};
   model.transitions.forEach((t,i)=>{
     const key = (t.from < t.to) ? `${t.from}|${t.to}` : `${t.to}|${t.from}`;
@@ -344,5 +339,28 @@ btnGenerate.addEventListener("click", generate);
 btnArrange.addEventListener("click", arrange);
 btnClear.addEventListener("click", clearAll);
 window.addEventListener("resize", updatePaths);
+
+/* auto-grow textarea (and set initial height) */
+document.querySelectorAll("textarea").forEach(t => {
+  const grow = () => {
+    t.style.height = "auto";
+    t.style.height = t.scrollHeight + "px";
+  };
+  t.addEventListener("input", grow);
+  grow(); // initial
+});
+
+/* DEFAULT EXAMPLE */
+statesInput.value = "q0,q1,q2";
+alphaInput.value = "0,1";
+transInput.value =
+`q0,0,q1
+q0,1,q0
+q1,0,q1
+q1,1,q2
+q2,0,q1
+q2,1,q0`;
+startInput.value = "q0";
+finalInput.value = "q2";
 
 })();
