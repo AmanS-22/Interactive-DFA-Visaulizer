@@ -1,213 +1,348 @@
 (() => {
-  const $ = (id) => document.getElementById(id);
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const parseList = (str) => (str || "").split(",").map(s => s.trim()).filter(Boolean);
 
-  const statesInput = $("states-input");
-  const alphaInput = $("alpha-input");
-  const transInput = $("trans-input");
-  const startInput = $("start-input");
-  const finalInput = $("final-input");
+const $ = id => document.getElementById(id);
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  const btnGenerate = $("btn-generate");
-  const btnArrange = $("btn-arrange");
-  const btnClear = $("btn-clear");
+const statesInput = $("states-input");
+const alphaInput = $("alpha-input");
+const transInput = $("trans-input");
+const startInput = $("start-input");
+const finalInput = $("final-input");
 
-  const errorBox = $("error");
-  const diagram = $("diagram");
-  const diagramContent = $("diagram-content");
+const btnGenerate = $("btn-generate");
+const btnArrange = $("btn-arrange");
+const btnClear = $("btn-clear");
 
-  const tableHead = $("dfa-table").querySelector("thead");
-  const tableBody = $("dfa-table").querySelector("tbody");
+const diagram = $("diagram");
+const errorBox = $("error");
 
-  const NODE_R = 30;
-  const svgNS = "http://www.w3.org/2000/svg";
+const thead = $("dfa-table").querySelector("thead");
+const tbody = $("dfa-table").querySelector("tbody");
 
-  let model = { states: [], alpha: [], transitions: [], start: null, finals: new Set() };
-  let nodeElems = new Map();
-  let pathElems = [];
+const NODE_R = 30;
+const svgNS = "http://www.w3.org/2000/svg";
 
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.classList.add("svg-overlay");
-  diagramContent.appendChild(svg);
+let model = null;
+let nodeElems = new Map();
+let pathElems = [];
 
-  const marker = document.createElementNS(svgNS, "marker");
-  marker.setAttribute("id", "arrow");
-  marker.setAttribute("markerWidth", "10");
-  marker.setAttribute("markerHeight", "10");
-  marker.setAttribute("refX", "8");
-  marker.setAttribute("refY", "5");
-  marker.setAttribute("orient", "auto");
+const svg = document.createElementNS(svgNS, "svg");
+svg.classList.add("svg-overlay");
+diagram.appendChild(svg);
 
-  const arrowHead = document.createElementNS(svgNS, "path");
-  arrowHead.setAttribute("d", "M0,0 L10,5 L0,10 z");
-  arrowHead.setAttribute("fill", "#999");
+const defs = document.createElementNS(svgNS, "defs");
+const marker = document.createElementNS(svgNS, "marker");
+marker.setAttribute("id", "arrow");
+marker.setAttribute("markerWidth", "10");
+marker.setAttribute("markerHeight", "10");
+marker.setAttribute("refX", "8");
+marker.setAttribute("refY", "5");
+marker.setAttribute("orient", "auto");
+const head = document.createElementNS(svgNS, "path");
+head.setAttribute("d", "M0,0 L10,5 L0,10 z");
+head.setAttribute("fill", "#ccc");
+marker.appendChild(head);
+defs.appendChild(marker);
+svg.appendChild(defs);
 
-  marker.appendChild(arrowHead);
-  const defs = document.createElementNS(svgNS, "defs");
-  defs.appendChild(marker);
-  svg.appendChild(defs);
+function parseList(s) {
+  return (s || "").split(",").map(x => x.trim()).filter(Boolean);
+}
 
-  function showError(msg) {
-    errorBox.textContent = msg;
-    errorBox.classList.remove("hidden");
+function parseTransitions(text) {
+  return text.split("\n").map(l => l.trim()).filter(Boolean)
+    .map(line => {
+      const [a,b,c] = line.split(",").map(x=>x.trim());
+      return { from: a, symbol: b, to: c };
+    });
+}
+
+function showError(msg){
+  errorBox.textContent = msg;
+  errorBox.classList.remove("hidden");
+}
+
+function clearError(){ errorBox.classList.add("hidden"); }
+
+function buildModel(){
+  clearError();
+
+  const states = parseList(statesInput.value);
+  const alpha = parseList(alphaInput.value);
+  const start = startInput.value.trim();
+  const finals = new Set(parseList(finalInput.value));
+
+  if(!states.includes(start)){
+    showError("Start state missing from states.");
+    return null;
   }
 
-  function clearError() {
-    errorBox.classList.add("hidden");
+  let transitions;
+  try { transitions = parseTransitions(transInput.value); }
+  catch(e){ showError(e.message); return null; }
+
+  for(const t of transitions){
+    if(!states.includes(t.from) || !states.includes(t.to)){
+      showError("Invalid transition state.");
+      return null;
+    }
   }
 
-  function parseTransitions(text) {
-    return text
-      .trim()
-      .split("\n")
-      .filter(Boolean)
-      .map(line => {
-        const parts = line.split(",");
-        return { from: parts[0].trim(), symbol: parts[1].trim(), to: parts[2].trim() };
-      });
-  }
+  const stateObjs = states.map((id,i)=>({
+    id,
+    cx: 120+120*i,
+    cy: 140
+  }));
 
-  function buildModel() {
-    clearError();
+  return { states: stateObjs, alpha, transitions, start, finals };
+}
 
-    const states = parseList(statesInput.value);
-    const alpha = parseList(alphaInput.value);
-    const transitions = parseTransitions(transInput.value);
-    const start = startInput.value.trim();
-    const finals = new Set(parseList(finalInput.value));
+function position(s, el){
+  el.style.left = s.cx - NODE_R + "px";
+  el.style.top  = s.cy - NODE_R + "px";
+}
 
-    model = {
-      states: states.map((id, i) => ({ id, x: 100 + i * 90, y: 150 })),
-      alpha,
-      transitions,
-      start,
-      finals
+/* ====== RENDER STATES ====== */
+function renderStates(){
+  nodeElems.forEach(el=>el.remove());
+  nodeElems.clear();
+
+  model.states.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "state";
+    el.textContent = s.id;
+
+    if(model.start === s.id) el.classList.add("start");
+    if(model.finals.has(s.id)) el.classList.add("final");
+
+    let drag = null;
+
+    el.addEventListener("pointerdown", e=>{
+      el.setPointerCapture(e.pointerId);
+      drag = {
+        id: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: s.cx,
+        origY: s.cy
+      };
+    });
+
+    document.addEventListener("pointermove", e=>{
+      if(!drag || drag.id!==e.pointerId) return;
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+
+      const rect = diagram.getBoundingClientRect();
+      s.cx = clamp(drag.origX+dx, NODE_R, rect.width-NODE_R);
+      s.cy = clamp(drag.origY+dy, NODE_R, rect.height-NODE_R);
+
+      position(s, el);
+      updatePaths();
+    });
+
+    document.addEventListener("pointerup", e=>{
+      if(!drag || drag.id!==e.pointerId) return;
+      el.releasePointerCapture(e.pointerId);
+      drag = null;
+    });
+
+    diagram.appendChild(el);
+    nodeElems.set(s.id, el);
+    position(s, el);
+  });
+}
+
+/* ====== TRANSITIONS ====== */
+function circlePoint(cx, cy, r, theta){
+  return { x: cx + Math.cos(theta)*r, y: cy + Math.sin(theta)*r };
+}
+
+function clearPaths(){
+  pathElems.forEach(p => p.g.remove());
+  pathElems = [];
+}
+
+function computePath(from, to, parallelIndex, parallelCount){
+  const fx = from.cx, fy = from.cy;
+  const tx = to.cx, ty = to.cy;
+
+  if(from.id === to.id){
+    const R = NODE_R + 15;
+    const sx = fx;
+    const sy = fy - NODE_R;
+
+    const c1x = fx - R;
+    const c1y = fy - R*1.4;
+    const c2x = fx + R;
+    const c2y = fy - R*1.4;
+
+    return {
+      d: `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${sx} ${sy}`,
+      label: { x: fx, y: fy - R*1.8 }
     };
-
-    return model;
   }
 
-  function renderStates() {
-    model.states.forEach(s => {
-      let el = nodeElems.get(s.id);
-      if (!el) {
-        el = document.createElement("div");
-        el.className = "state";
-        el.textContent = s.id;
+  const dx = tx - fx;
+  const dy = ty - fy;
+  const dist = Math.hypot(dx,dy);
 
-        let drag = null;
+  const ux = dx/dist;
+  const uy = dy/dist;
 
-        el.addEventListener("pointerdown", e => {
-          e.stopPropagation();
-          el.setPointerCapture(e.pointerId);
-          drag = { startX: e.clientX, startY: e.clientY, origX: s.x, origY: s.y };
-        });
+  const px = -uy;
+  const py =  ux;
 
-        document.addEventListener("pointermove", e => {
-          if (!drag) return;
-          s.x = drag.origX + (e.clientX - drag.startX);
-          s.y = drag.origY + (e.clientY - drag.startY);
-          el.style.left = s.x + "px";
-          el.style.top = s.y + "px";
-          updatePaths();
-        });
+  const sx = fx + ux*NODE_R;
+  const sy = fy + uy*NODE_R;
+  const ex = tx - ux*NODE_R;
+  const ey = ty - uy*NODE_R;
 
-        el.addEventListener("pointerup", () => (drag = null));
+  const base = Math.min(60, dist*0.35);
 
-        diagramContent.appendChild(el);
-        nodeElems.set(s.id, el);
-      }
+  let offset = 0;
+  if(parallelCount > 1){
+    const mid = (parallelCount-1)/2;
+    offset = (parallelIndex - mid) * 25;
+  }
 
-      el.style.left = s.x + "px";
-      el.style.top = s.y + "px";
-      el.classList.toggle("start", model.start === s.id);
-      el.classList.toggle("final", model.finals.has(s.id));
+  const cx = (sx+ex)/2 + px*(base + offset);
+  const cy = (sy+ey)/2 + py*(base + offset);
+
+  return {
+    d: `M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`,
+    label: { x: cx, y: cy - 4 }
+  };
+}
+
+function drawTransitions(){
+  clearPaths();
+
+  // group for parallel arcs
+  const groups = {};
+  model.transitions.forEach((t,i)=>{
+    const key = (t.from < t.to) ? `${t.from}|${t.to}` : `${t.to}|${t.from}`;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(i);
+  });
+
+  model.transitions.forEach((t,i)=>{
+    const key = (t.from < t.to) ? `${t.from}|${t.to}` : `${t.to}|${t.from}`;
+    const group = groups[key];
+    const pIndex = group.indexOf(i);
+    const pCount = group.length;
+
+    const g = document.createElementNS(svgNS, "g");
+
+    const path = document.createElementNS(svgNS, "path");
+    path.classList.add("arrow");
+    path.setAttribute("marker-end","url(#arrow)");
+
+    const text = document.createElementNS(svgNS, "text");
+    text.classList.add("label-text");
+    text.textContent = t.symbol;
+
+    g.appendChild(path);
+    g.appendChild(text);
+    svg.appendChild(g);
+
+    pathElems.push({ g, path, text, t, pIndex, pCount });
+  });
+
+  updatePaths();
+}
+
+function updatePaths(){
+  svg.setAttribute("width", diagram.clientWidth);
+  svg.setAttribute("height", diagram.clientHeight);
+
+  pathElems.forEach(p=>{
+    const from = model.states.find(s=>s.id===p.t.from);
+    const to   = model.states.find(s=>s.id===p.t.to);
+
+    const out = computePath(from, to, p.pIndex, p.pCount);
+
+    p.path.setAttribute("d", out.d);
+    p.text.setAttribute("x", out.label.x);
+    p.text.setAttribute("y", out.label.y);
+  });
+}
+
+/* ====== TABLE ====== */
+function renderTable(){
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  const hr = document.createElement("tr");
+  hr.innerHTML = `<th>State</th>` + model.alpha.map(a=>`<th>${a}</th>`).join("");
+  thead.appendChild(hr);
+
+  model.states.forEach(s=>{
+    const tr = document.createElement("tr");
+
+    let name = s.id;
+    if(model.start===s.id) name = "→ " + name;
+    if(model.finals.has(s.id)) name += " *";
+
+    let row = `<td style="text-align:left">${name}</td>`;
+    model.alpha.forEach(sym=>{
+      const t = model.transitions.find(x=>x.from===s.id && x.symbol===sym);
+      row += `<td>${t ? t.to : "-"}</td>`;
     });
-  }
 
-  function drawTransitions() {
-    svg.innerHTML = "";
-    svg.appendChild(defs);
-    pathElems = [];
+    tr.innerHTML = row;
+    tbody.appendChild(tr);
+  });
+}
 
-    model.transitions.forEach(t => {
-      const g = document.createElementNS(svgNS, "g");
-      const path = document.createElementNS(svgNS, "path");
-      path.classList.add("arrow");
-      path.setAttribute("marker-end", "url(#arrow)");
+/* ====== ARRANGE ====== */
+function arrange(){
+  const rect = diagram.getBoundingClientRect();
+  const cx = rect.width/2;
+  const cy = rect.height/2;
+  const n = model.states.length;
 
-      const label = document.createElementNS(svgNS, "text");
-      label.classList.add("label-text");
-      label.textContent = t.symbol;
+  const R = Math.min(rect.width, rect.height)/2 - 60;
 
-      g.appendChild(path);
-      g.appendChild(label);
-      svg.appendChild(g);
+  model.states.forEach((s,i)=>{
+    const th = (i/n)*2*Math.PI - Math.PI/2;
+    s.cx = cx + Math.cos(th)*R;
+    s.cy = cy + Math.sin(th)*R;
 
-      pathElems.push({ g, path, label, t });
-    });
+    const el = nodeElems.get(s.id);
+    position(s, el);
+  });
 
-    updatePaths();
-  }
+  drawTransitions();
+}
 
-  function updatePaths() {
-    pathElems.forEach(p => {
-      const from = model.states.find(s => s.id === p.t.from);
-      const to = model.states.find(s => s.id === p.t.to);
+/* ====== BUTTONS ====== */
+function generate(){
+  const m = buildModel();
+  if(!m) return;
 
-      const fx = from.x + NODE_R;
-      const fy = from.y + NODE_R;
-      const tx = to.x + NODE_R;
-      const ty = to.y + NODE_R;
+  model = m;
+  renderStates();
+  drawTransitions();
+  renderTable();
+  btnArrange.disabled = false;
+}
 
-      const dx = tx - fx;
-      const dy = ty - fy;
-      const cx = (fx + tx) / 2 - dy * 0.1;
-      const cy = (fy + ty) / 2 + dx * 0.1;
+function clearAll(){
+  model = null;
+  nodeElems.forEach(el=>el.remove());
+  nodeElems.clear();
+  clearPaths();
+  svg.appendChild(defs);
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+  clearError();
+  btnArrange.disabled = true;
+}
 
-      p.path.setAttribute("d", `M${fx},${fy} Q${cx},${cy} ${tx},${ty}`);
+btnGenerate.addEventListener("click", generate);
+btnArrange.addEventListener("click", arrange);
+btnClear.addEventListener("click", clearAll);
+window.addEventListener("resize", updatePaths);
 
-      p.label.setAttribute("x", cx);
-      p.label.setAttribute("y", cy);
-    });
-  }
-
-  function renderTable() {
-    tableHead.innerHTML = "";
-    tableBody.innerHTML = "";
-
-    const hr = document.createElement("tr");
-    hr.innerHTML = "<th>State</th>" + model.alpha.map(a => `<th>${a}</th>`).join("");
-    tableHead.appendChild(hr);
-
-    model.states.forEach(s => {
-      const tr = document.createElement("tr");
-      const label = `${model.start === s.id ? "→ " : ""}${s.id}${model.finals.has(s.id) ? " *" : ""}`;
-      tr.innerHTML = `<th>${label}</th>` + model.alpha.map(a => {
-        const t = model.transitions.find(x => x.from === s.id && x.symbol === a);
-        return `<td>${t ? t.to : "-"}</td>`;
-      }).join("");
-      tableBody.appendChild(tr);
-    });
-  }
-
-  function generate() {
-    buildModel();
-    renderStates();
-    drawTransitions();
-    renderTable();
-  }
-
-  btnGenerate.addEventListener("click", generate);
-  btnArrange.addEventListener("click", () => { model.states.forEach((s,i)=>{ s.x=100+i*120; s.y=150; }); renderStates(); updatePaths(); });
-  btnClear.addEventListener("click", () => location.reload());
-
-  // Default example
-  statesInput.value = "q0,q1,q2";
-  alphaInput.value = "0,1";
-  transInput.value = "q0,0,q1\nq0,1,q0\nq1,0,q1\nq1,1,q2\nq2,0,q1\nq2,1,q0";
-  startInput.value = "q0";
-  finalInput.value = "q2";
-  generate();
 })();

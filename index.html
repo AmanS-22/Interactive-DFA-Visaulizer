@@ -1,69 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DFA Visualizer</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DFA Visualizer</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-
 <div class="container">
-    <h1>DFA Visualizer</h1>
+  <h1>DFA Visualizer</h1>
 
-    <!-- INPUT PANEL -->
-    <section class="panel">
-        <h2 class="section-title">DFA Specification</h2>
+  <!-- INPUT PANEL -->
+  <section class="panel">
+    <h2>DFA Specification</h2>
 
-        <div class="row">
-            <label>States
-                <input id="states-input" placeholder="q0,q1,q2" />
-            </label>
-            <label>Alphabet
-                <input id="alpha-input" placeholder="0,1" />
-            </label>
-        </div>
+    <div class="row">
+      <label>States
+        <input id="states-input" placeholder="q0,q1,q2" />
+      </label>
 
-        <label>Transitions (from,symbol,to)
-            <textarea id="trans-input" placeholder="q0,0,q1"></textarea>
-        </label>
+      <label>Alphabet
+        <input id="alpha-input" placeholder="0,1" />
+      </label>
+    </div>
 
-        <div class="row">
-            <label>Start State
-                <input id="start-input" placeholder="q0" />
-            </label>
-            <label>Final States
-                <input id="final-input" placeholder="q2" />
-            </label>
-        </div>
+    <label>Transitions (from,symbol,to)
+      <textarea id="trans-input"
+        placeholder="q0,0,q1&#10;q0,1,q0&#10;q1,0,q1&#10;q1,1,q2&#10;q2,0,q1&#10;q2,1,q0"></textarea>
+    </label>
 
-        <div class="actions">
-            <button id="btn-generate" class="btn primary">Generate</button>
-            <button id="btn-arrange" class="btn">Arrange</button>
-            <button id="btn-clear" class="btn danger">Clear</button>
-        </div>
+    <div class="row">
+      <label>Start State
+        <input id="start-input" placeholder="q0" />
+      </label>
+      <label>Final States
+        <input id="final-input" placeholder="q2" />
+      </label>
+    </div>
 
-        <div id="error" class="error hidden"></div>
-    </section>
+    <div class="actions">
+      <button class="btn primary" id="btn-generate">Generate</button>
+      <button class="btn" id="btn-arrange" disabled>Arrange</button>
+      <button class="btn danger" id="btn-clear">Clear</button>
+    </div>
 
-    <!-- DIAGRAM -->
-    <section class="panel">
-        <h2 class="section-title">Diagram</h2>
-        <div id="diagram">
-            <div id="diagram-content"></div>
-        </div>
-    </section>
+    <div id="error" class="error hidden"></div>
+  </section>
 
-    <!-- TRANSITION TABLE -->
-    <section class="panel">
-        <h2 class="section-title">Transition Table</h2>
-        <div class="table-wrapper">
-            <table id="dfa-table">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </section>
+  <!-- DIAGRAM -->
+  <section class="panel">
+    <h2>Diagram</h2>
+    <div id="diagram"></div>
+  </section>
+
+  <!-- TABLE -->
+  <section class="panel">
+    <h2>Transition Table</h2>
+    <div class="table-wrapper">
+      <table id="dfa-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 
 <script src="script.js"></script>
