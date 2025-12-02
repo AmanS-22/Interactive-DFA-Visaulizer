@@ -264,3 +264,16 @@ textarea {
   color: #e4b32e;
   transform: scale(1.1);
 }
+
+#dfa-table th:first-child {
+  text-align: left !important;
+  width: 140px;
+}
+
+#dfa-table th:not(:first-child) {
+  text-align: center !important;
+}
+
+#dfa-table td {
+  text-align: center;
+}
